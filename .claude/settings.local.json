@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:\\\\Users\\\\DELL\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\" -c \"import subprocess; r = subprocess.run\\(['npx', 'tsc', '--noEmit', '--skipLibCheck'], capture_output=True, text=True, shell=True, cwd='C:/Users/DELL/psicorank-ai'\\); print\\(r.stdout[-3000:] if len\\(r.stdout\\)>3000 else r.stdout\\); print\\('STDERR:', r.stderr[-2000:] if len\\(r.stderr\\)>2000 else r.stderr\\); print\\('RC:', r.returncode\\)\")",
+      "PowerShell(cd \"C:\\\\Users\\\\DELL\\\\psicorank-ai\"; Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\DELL\\\\psicorank-ai'; npm run dev\" -WindowStyle Normal; Start-Sleep -Seconds 5; Write-Host \"Dev server started\")",
+      "PowerShell(Test-NetConnection *)",
+      "PowerShell($response = Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 10; Write-Host \"Status: $\\($response.StatusCode\\)\"; $html = $response.Content; Write-Host \"HTML length: $\\($html.Length\\)\"; if \\($html -match \"PsicoRank\"\\) { Write-Host \"✅ PsicoRank found in HTML\" } else { Write-Host \"❌ PsicoRank NOT found\" }; if \\($html -match \"Começar grátis\"\\) { Write-Host \"✅ CTA 'Começar grátis' found\" } else { Write-Host \"❌ CTA not found\" }; if \\($html -match \"Benefícios|beneficios\"\\) { Write-Host \"✅ Features section found\" } else { Write-Host \"❌ Features not found\" }; if \\($html -match \"Planos|planos\"\\) { Write-Host \"✅ Pricing section found\" } else { Write-Host \"❌ Pricing not found\" }; if \\($html -match \"FAQ|faq\"\\) { Write-Host \"✅ FAQ section found\" } else { Write-Host \"❌ FAQ not found\" })",
+      "Bash(npx next *)",
+      "Bash(rm -rf .next)",
+      "Bash(echo \"EXIT_CODE:$?\")"
+    ]
+  }
+}
