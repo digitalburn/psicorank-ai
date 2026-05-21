@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code) {
+    console.error(`[auth/callback] sem code. URL completa: ${request.url} | params: ${searchParams.toString()}`);
     return NextResponse.redirect(new URL("/login", origin));
   }
 
