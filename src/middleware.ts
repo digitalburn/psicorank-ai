@@ -14,6 +14,12 @@ function isSupabaseConfigured() {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/auth")) {
+    return NextResponse.next({ request });
+  }
+
   if (!isSupabaseConfigured()) {
     return NextResponse.next({ request });
   }
@@ -35,14 +41,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Atualiza a sessão do usuário (necessário para manter cookies frescos)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  // Rotas protegidas → requer autenticação
   const isProtected =
     pathname.startsWith("/dashboard") || pathname.startsWith("/onboarding");
 

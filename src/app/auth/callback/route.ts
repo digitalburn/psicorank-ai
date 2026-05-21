@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   const cookieStore = await cookies();
+  const pendingCookies: Array<Parameters<typeof cookieStore.set>> = [];
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,9 +30,10 @@ export async function GET(request: NextRequest) {
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+            pendingCookies.push([name, value, options]);
+          });
         },
       },
     },
@@ -45,7 +47,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Verifica se o perfil já passou pelo onboarding
   const { data: profile } = await supabase
     .from("profiles")
     .select("specialty, clinic_name")
@@ -53,7 +54,12 @@ export async function GET(request: NextRequest) {
 
   const needsOnboarding = !profile?.specialty || !profile?.clinic_name;
 
-  return NextResponse.redirect(
-    new URL(needsOnboarding ? "/onboarding" : "/dashboard", origin),
-  );
+  const redirectUrl = new URL(needsOnboarding ? "/onboarding" : "/dashboard", origin);
+  const response = NextResponse.redirect(redirectUrl);
+
+  pendingCookies.forEach(([name, value, options]) => {
+    response.cookies.set(name, value, options);
+  });
+
+  return response;
 }
