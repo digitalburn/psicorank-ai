@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
+type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -15,12 +17,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (!code) {
-    console.error(`[auth/callback] sem code. URL completa: ${request.url} | params: ${searchParams.toString()}`);
+    console.error(`[auth/callback] sem code. URL: ${request.url} | params: ${searchParams.toString()}`);
     return NextResponse.redirect(new URL("/login", origin));
   }
 
   const cookieStore = await cookies();
-  const pendingCookies: Array<Parameters<typeof cookieStore.set>> = [];
+  const pendingCookies: PendingCookie[] = [];
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options);
-            pendingCookies.push([name, value, options]);
+            pendingCookies.push({ name, value, options: options as Record<string, unknown> });
           });
         },
       },
@@ -58,8 +60,8 @@ export async function GET(request: NextRequest) {
   const redirectUrl = new URL(needsOnboarding ? "/onboarding" : "/dashboard", origin);
   const response = NextResponse.redirect(redirectUrl);
 
-  pendingCookies.forEach(([name, value, options]) => {
-    response.cookies.set(name, value, options);
+  pendingCookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2]);
   });
 
   return response;
