@@ -87,7 +87,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.06),_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#eef2ff_100%)] text-slate-950 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_30%),linear-gradient(180deg,#060816_0%,#0b1020_100%)] dark:text-slate-50">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-80 border-r border-slate-200/80 bg-white/85 px-5 py-6 backdrop-blur-2xl dark:border-slate-800/80 dark:bg-slate-950/78 lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-80 overflow-y-auto border-r border-slate-200/80 bg-white/85 px-5 py-6 backdrop-blur-2xl dark:border-slate-800/80 dark:bg-slate-950/78 lg:block">
         <SidebarContent activePath={activePath} hash={hash} user={user} onSignOut={signOut} />
       </aside>
 
@@ -104,7 +104,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               aria-label="Fechar menu"
             />
             <motion.aside
-              className="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-sm border-r border-slate-200/80 bg-white px-5 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.24)] dark:border-slate-800 dark:bg-slate-950 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-sm overflow-y-auto border-r border-slate-200/80 bg-white px-5 py-6 shadow-[0_24px_80px_rgba(15,23,42,0.24)] dark:border-slate-800 dark:bg-slate-950 lg:hidden"
               initial={{ x: -320 }}
               animate={{ x: 0 }}
               exit={{ x: -320 }}
