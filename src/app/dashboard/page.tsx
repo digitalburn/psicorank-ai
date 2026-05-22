@@ -12,6 +12,7 @@ import {
   UserPlus,
   Zap,
 } from "lucide-react";
+import { Suspense } from "react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { GeneratorWorkspace } from "@/components/generator-workspace";
 import { GoogleSeoGenerator } from "@/components/google-seo-generator";
@@ -391,7 +392,9 @@ export default function DashboardPage() {
         </motion.section>
 
         <motion.section variants={item}>
-          <GmbConnect />
+          <Suspense fallback={<div className="h-48 animate-pulse rounded-[2rem] bg-white/50 dark:bg-slate-900/50" />}>
+            <GmbConnect />
+          </Suspense>
         </motion.section>
 
         <motion.section className="space-y-5" variants={item}>
