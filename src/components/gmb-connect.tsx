@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { AlertCircle, CheckCircle2, Link2, Loader2, MapPin, Star, StarOff } from "lucide-react";
 import type { GmbReview } from "@/lib/gmb-api";
 import { starToNumber } from "@/lib/gmb-api";
+import Link from "next/link";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type ReviewsResponse = {
@@ -62,12 +63,12 @@ export function GmbConnect() {
             <p className="text-sm text-slate-500">Disponível no plano Pro ou Clínica</p>
           </div>
         </div>
-        <a
+        <Link
           href="/#planos"
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-slate-950"
         >
           Ver planos
-        </a>
+        </Link>
       </div>
     );
   }
