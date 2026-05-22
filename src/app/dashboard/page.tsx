@@ -16,6 +16,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { GeneratorWorkspace } from "@/components/generator-workspace";
 import { GoogleSeoGenerator } from "@/components/google-seo-generator";
 import { ContentHistory } from "@/components/content-history";
+import { GmbConnect } from "@/components/gmb-connect";
 import { cn } from "@/lib/cn";
 
 const metrics = [
@@ -387,6 +388,10 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
+        </motion.section>
+
+        <motion.section variants={item}>
+          <GmbConnect />
         </motion.section>
 
         <motion.section className="space-y-5" variants={item}>
