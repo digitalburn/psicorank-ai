@@ -5,7 +5,7 @@ import type {
   GoogleSeoGeneratorPayload,
   PostGeneratorPayload,
 } from "@/lib/generation";
-import type { GeneratedPostRow, GeneratedSeoRow, Profile } from "@/lib/database.types";
+import type { GeneratedPostRow, GeneratedSeoRow, Profile, Subscription } from "@/lib/database.types";
 
 export async function getProfile(supabase: SupabaseClient): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").single();
@@ -111,4 +111,40 @@ export async function deletePost(supabase: SupabaseClient, id: string): Promise<
 export async function deleteSeo(supabase: SupabaseClient, id: string): Promise<void> {
   const { error } = await supabase.from("generated_seo").delete().eq("id", id);
   if (error) throw error;
+}
+
+export async function getSubscription(supabase: SupabaseClient): Promise<Subscription | null> {
+  const { data, error } = await supabase.from("subscriptions").select("*").single();
+  if (error && error.code !== "PGRST116") throw error;
+  return data as Subscription | null;
+}
+
+export async function getPostCountThisMonth(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<number> {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  const { count } = await supabase
+    .from("generated_posts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", start.toISOString());
+  return count ?? 0;
+}
+
+export async function getSeoCountThisMonth(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<number> {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  const { count } = await supabase
+    .from("generated_seo")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", start.toISOString());
+  return count ?? 0;
 }

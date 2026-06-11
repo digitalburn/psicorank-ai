@@ -13,7 +13,7 @@ import {
   type PostGeneratorPayload,
 } from "@/lib/generation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { savePost, saveSeo } from "@/lib/supabase/queries";
+import { savePost, saveSeo, getPostCountThisMonth, getSeoCountThisMonth } from "@/lib/supabase/queries";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001";
@@ -143,6 +143,21 @@ async function generatePost(payload: PostGeneratorPayload) {
     );
   }
 
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+    if (profile?.plan === "starter") {
+      const count = await getPostCountThisMonth(supabase, user.id);
+      if (count >= 5) {
+        return NextResponse.json(
+          { error: "Limite de 5 posts/mês atingido no plano Starter. Faça upgrade para o Pro." },
+          { status: 403 },
+        );
+      }
+    }
+  }
+
   const text = await callClaude({
     prompt: buildPostPrompt(payload),
     systemPrompt: postGeneratorSystemPrompt,
@@ -164,6 +179,21 @@ async function generateGoogleSeo(payload: GoogleSeoGeneratorPayload) {
       { error: "Preencha cidade, especialidade e foco terapêutico antes de gerar o SEO." },
       { status: 400 },
     );
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+    if (profile?.plan === "starter") {
+      const count = await getSeoCountThisMonth(supabase, user.id);
+      if (count >= 1) {
+        return NextResponse.json(
+          { error: "Limite de 1 SEO/mês atingido no plano Starter. Faça upgrade para o Pro." },
+          { status: 403 },
+        );
+      }
+    }
   }
 
   const text = await callClaude({

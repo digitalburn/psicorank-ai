@@ -2,13 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════
+   Design tokens — centralize all brand & semantic colors here.
+   Components should use the Tailwind aliases (mint, coral, plum…)
+   which resolve to these CSS variables.
+   WCAG AA ratios noted where relevant (text on its expected bg).
+   ═══════════════════════════════════════════════════════════════ */
 :root {
+  /* Brand palette */
+  --c-mint:  24 184 143;   /* #18B88F */
+  --c-coral: 245 107 95;   /* #F56B5F */
+  --c-plum:  98 70 234;    /* #6246EA */
+  --c-ink:   17 24 39;     /* #111827 */
+  --c-cloud: 247 248 251;  /* #F7F8FB */
+
+  /* Text hierarchy — light mode (on white / slate-50 surfaces) */
+  --c-tx-1:   15 23 42;    /* slate-950 — 18.1:1 ✓ headings & values */
+  --c-tx-2:   51 65 85;    /* slate-700 —  8.5:1 ✓ body copy         */
+  --c-tx-3:   71 85 105;   /* slate-600 —  5.7:1 ✓ secondary labels  */
+  --c-tx-dim: 100 116 139; /* slate-500 —  4.0:1 ✓ large-only / hint */
+
+  /* Surface stack — light mode */
+  --c-bg-0: 255 255 255;   /* white */
+  --c-bg-1: 248 250 252;   /* slate-50 */
+  --c-bg-2: 241 245 249;   /* slate-100 */
+  --c-bdr:  226 232 240;   /* slate-200 */
+
+  /* Status accents — light mode */
+  --c-ok:    5 150 105;    /* emerald-600 */
+  --c-ok-bg: 209 250 229;  /* emerald-100 */
+  --c-err:   220 38 38;    /* red-600 */
+  --c-warn:  217 119 6;    /* amber-600 */
+
   color-scheme: light;
   background: #f8fafc;
   color: #0f172a;
 }
 
 html.dark {
+  /* Text hierarchy — dark mode (on slate-900 / slate-950 surfaces) */
+  --c-tx-1:   255 255 255;  /* white     — 21:1  ✓ */
+  --c-tx-2:   226 232 240;  /* slate-200 — 13:1  ✓ */
+  --c-tx-3:   203 213 225;  /* slate-300 — 10:1  ✓ */
+  --c-tx-dim: 148 163 184;  /* slate-400 —  5.4:1 ✓ */
+
+  /* Surface stack — dark mode */
+  --c-bg-0: 2 6 23;         /* slate-950 */
+  --c-bg-1: 15 23 42;       /* slate-900 */
+  --c-bg-2: 30 41 59;       /* slate-800 */
+  --c-bdr:  30 41 59;       /* slate-800 */
+
+  /* Status accents — dark mode */
+  --c-ok:    52 211 153;    /* emerald-400 */
+  --c-ok-bg: 6 78 59;       /* emerald-900 */
+  --c-err:   248 113 113;   /* red-400 */
+  --c-warn:  251 191 36;    /* amber-400 */
+
   color-scheme: dark;
 }
 

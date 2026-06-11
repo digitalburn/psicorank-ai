@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
   CalendarDays,
-  ChevronRight,
   FileText,
   Home,
   LogOut,
@@ -23,6 +22,7 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
+import { PlanStatus } from "@/components/plan-status";
 import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/cn";
 
@@ -31,9 +31,9 @@ const navItems = [
   { label: "Posts IA", icon: Sparkles, href: "/dashboard#instagram" },
   { label: "SEO local", icon: FileText, href: "/dashboard#google" },
   { label: "Avaliacoes", icon: Star, href: "/dashboard#reviews" },
-  { label: "Calendario", icon: CalendarDays, href: "/dashboard#calendar" },
-  { label: "Relatorios", icon: BarChart3, href: "/dashboard#reports" },
-  { label: "Configuracoes", icon: Settings, href: "/dashboard#settings" },
+  { label: "Calendario", icon: CalendarDays, href: "/dashboard#calendar", comingSoon: true },
+  { label: "Relatorios", icon: BarChart3, href: "/dashboard#reports", comingSoon: true },
+  { label: "Configuracoes", icon: Settings, href: "/dashboard#settings", comingSoon: true },
 ];
 
 const shellVariants = {
@@ -149,10 +149,28 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="hidden min-w-0 flex-1 lg:block">
-              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-                <Search className="size-4 shrink-0" />
-                <span className="truncate">Pesquisar métricas, campanhas, posts e SEO</span>
-              </label>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const q = (e.currentTarget.elements.namedItem("search") as HTMLInputElement).value.toLowerCase();
+                  const map: Array<[string[], string]> = [
+                    [["post", "instagram", "legenda", "hashtag"], "#instagram"],
+                    [["seo", "google", "local", "cidade"], "#google"],
+                    [["avaliacao", "review", "gmb", "negocio"], "#reviews"],
+                    [["historico", "conteudo", "salvo"], "#historico"],
+                  ];
+                  const match = map.find(([keys]) => keys.some((k) => q.includes(k)));
+                  if (match) window.location.hash = match[1];
+                }}
+                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+              >
+                <Search className="size-4 shrink-0 text-slate-400" />
+                <input
+                  name="search"
+                  className="w-full bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400 dark:text-white"
+                  placeholder="Pesquisar — posts, SEO, avaliações, histórico..."
+                />
+              </form>
             </div>
 
             <div className="ml-auto flex items-center gap-2">
@@ -164,13 +182,17 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               >
                 {theme === "dark" ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />}
               </Button>
-              <Link
-                className="focus-ring hidden min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800 sm:inline-flex"
-                href="/login"
-              >
-                Login
-                <ChevronRight className="size-4" />
-              </Link>
+              {user && (
+                <div className="hidden items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex">
+                  <div className="grid size-7 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-mint to-cyan-400 text-xs font-bold text-white">
+                    {(user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0] || "U")
+                      .split(" ").slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("") || "?"}
+                  </div>
+                  <span className="max-w-[120px] truncate text-sm font-semibold text-slate-950 dark:text-white">
+                    {user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Usuário"}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -240,6 +262,22 @@ function SidebarContent({
       <nav className="mt-5 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
+
+          if (item.comingSoon) {
+            return (
+              <div
+                key={item.label}
+                className="flex cursor-not-allowed items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 dark:text-slate-400"
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                <span>{item.label}</span>
+                <span className="ml-auto rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  em breve
+                </span>
+              </div>
+            );
+          }
+
           const isActive = item.href.includes("#")
             ? hash === new URL(item.href, "https://local.test").hash
             : activePath === item.href;
@@ -249,7 +287,7 @@ function SidebarContent({
               className={cn(
                 "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition duration-200",
                 isActive
-                  ? "bg-slate-950 text-white shadow-[0_16px_36px_rgba(15,23,42,0.2)] dark:bg-white dark:text-slate-950"
+                  ? "bg-white text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.2)] dark:bg-white dark:text-slate-950"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
               )}
               href={item.href}
@@ -263,30 +301,33 @@ function SidebarContent({
       </nav>
 
       <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <p className="text-sm font-semibold text-slate-950 dark:text-white">Sprint atual</p>
+        <p className="text-sm font-semibold text-slate-950 dark:text-white">Proximos passos</p>
         <div className="mt-4 space-y-3">
           {[
-            "Revisar copy de SEO local",
-            "Ajustar calendário editorial",
-            "Fechar lista de campanhas",
+            { label: "Gere um post para Instagram", href: "/dashboard#instagram" },
+            { label: "Crie um pacote de SEO local", href: "/dashboard#google" },
+            { label: "Conecte o Google Meu Negocio", href: "/dashboard#reviews" },
           ].map((item, index) => (
-            <div
-              key={item}
-              className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-3 dark:bg-slate-950"
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-3 transition hover:bg-slate-100 dark:bg-slate-950 dark:hover:bg-slate-900"
             >
-              <div className="grid size-7 place-items-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="grid size-7 shrink-0 place-items-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                 {index + 1}
               </div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {item}
+                {item.label}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
 
+      <PlanStatus />
+
       {/* User card */}
-      <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="mt-4 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-mint to-cyan-400 text-sm font-bold text-white shadow">
             {initials || "?"}

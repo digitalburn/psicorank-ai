@@ -6,10 +6,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#111827",
-        mint: "#18B88F",
+        ink:   "#111827",
+        mint:  "#18B88F",
         coral: "#F56B5F",
-        plum: "#6246EA",
+        plum:  "#6246EA",
         cloud: "#F7F8FB",
       },
       boxShadow: {

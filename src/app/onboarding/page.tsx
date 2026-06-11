@@ -101,8 +101,7 @@ export default function OnboardingPage() {
 
       const { error: upsertError } = await supabase
         .from("profiles")
-        .update({ name, specialty, city, clinic_name: clinicName })
-        .eq("id", user.id);
+        .upsert({ id: user.id, name, specialty, city, clinic_name: clinicName });
 
       if (upsertError) throw upsertError;
 

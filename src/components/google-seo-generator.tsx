@@ -12,6 +12,7 @@ import {
   Newspaper,
   SearchCheck,
   Send,
+  Sparkles,
   Tags,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export function GoogleSeoGenerator() {
   const [extraContext, setExtraContext] = useState("");
   const [result, setResult] = useState<GeneratedSeoResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPlanLimit, setIsPlanLimit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const resultText = useMemo(() => {
@@ -53,6 +55,7 @@ export function GoogleSeoGenerator() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setIsPlanLimit(false);
 
     const payload: GoogleSeoGeneratorPayload = {
       kind: "google-seo",
@@ -74,6 +77,7 @@ export function GoogleSeoGenerator() {
       const data = (await response.json()) as Partial<GeneratedSeoResult> & { error?: string };
 
       if (!response.ok || !data.content) {
+        if (response.status === 403) setIsPlanLimit(true);
         setError(data.error || "Nao foi possivel gerar o SEO para Google Meu Negocio.");
         return;
       }
@@ -82,6 +86,7 @@ export function GoogleSeoGenerator() {
         title: data.title || `SEO Google Meu Negocio em ${city}`,
         content: data.content,
       });
+      window.dispatchEvent(new CustomEvent("psicorank:content-generated"));
     } catch {
       setError("Falha de conexao ao chamar o gerador.");
     } finally {
@@ -211,7 +216,31 @@ export function GoogleSeoGenerator() {
                 Gerando SEO com Claude IA...
               </div>
             )}
-            {!isLoading && error && <p className="text-rose-500 dark:text-rose-400">{error}</p>}
+            {!isLoading && error && (
+              isPlanLimit ? (
+                <div className="flex flex-col items-center gap-4 py-8 text-center">
+                  <div className="grid size-14 place-items-center rounded-2xl bg-amber-500/10">
+                    <Sparkles className="size-6 text-amber-500" aria-hidden />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-950 dark:text-white">Limite do plano Starter atingido</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Você usou seu SEO gratuito este mês. Faça upgrade para SEO ilimitado.</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: "pro", billing: "monthly" }) });
+                      const d = (await res.json()) as { url?: string };
+                      if (d.url) window.location.href = d.url;
+                    }}
+                    className="rounded-xl bg-mint px-6 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(24,184,143,.35)] transition hover:-translate-y-0.5"
+                  >
+                    Assinar Pro — R$147/mês
+                  </button>
+                </div>
+              ) : (
+                <p className="text-rose-500 dark:text-rose-400">{error}</p>
+              )
+            )}
             {!isLoading && !error && result?.content && (
               <div className="grid gap-4">
                 <SeoBlock icon={FileText} label="Descricao otimizada">

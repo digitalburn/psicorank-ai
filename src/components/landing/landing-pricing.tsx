@@ -3,8 +3,23 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Check, Sparkles, Zap } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
+
+async function redirectToCheckout(plan: "pro" | "clinic", billing: "monthly" | "annual") {
+  const res = await fetch("/api/stripe/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plan, billing }),
+  });
+  if (res.status === 401) {
+    window.location.href = "/login?redirect=checkout&plan=" + plan;
+    return;
+  }
+  const data = (await res.json()) as { url?: string; error?: string };
+  if (data.url) window.location.href = data.url;
+  else alert(data.error ?? "Erro ao iniciar checkout.");
+}
 
 const plans = [
   {
@@ -81,6 +96,17 @@ const cardVariants = {
 
 export function LandingPricing() {
   const [annual, setAnnual] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handlePro() {
+    setLoading("pro");
+    await redirectToCheckout("pro", annual ? "annual" : "monthly");
+    setLoading(null);
+  }
+
+  async function handleClinic() {
+    window.open("https://wa.me/5511982113231?text=Quero+conhecer+o+plano+Cl%C3%ADnica+do+PsicoRank", "_blank");
+  }
 
   return (
     <section id="planos" className="relative py-24 sm:py-32">
@@ -195,17 +221,39 @@ export function LandingPricing() {
                 )}
               </div>
 
-              <Link
-                href="/login"
-                className={cn(
-                  "mt-7 flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5",
-                  plan.ctaVariant === "primary"
-                    ? "bg-mint text-white shadow-[0_12px_32px_rgba(24,184,143,0.35)] hover:shadow-[0_18px_40px_rgba(24,184,143,0.45)]"
-                    : "border border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700",
-                )}
-              >
-                {plan.cta}
-              </Link>
+              {plan.name === "Pro" ? (
+                <button
+                  onClick={handlePro}
+                  disabled={loading === "pro"}
+                  className={cn(
+                    "mt-7 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed",
+                    "bg-mint text-white shadow-[0_12px_32px_rgba(24,184,143,0.35)] hover:shadow-[0_18px_40px_rgba(24,184,143,0.45)]",
+                  )}
+                >
+                  {loading === "pro" && <Loader2 className="size-4 animate-spin" aria-hidden />}
+                  {plan.cta}
+                </button>
+              ) : plan.name === "Clínica" ? (
+                <button
+                  onClick={handleClinic}
+                  className={cn(
+                    "mt-7 flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5",
+                    "border border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700",
+                  )}
+                >
+                  {plan.cta}
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className={cn(
+                    "mt-7 flex w-full items-center justify-center rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5",
+                    "border border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700",
+                  )}
+                >
+                  {plan.cta}
+                </Link>
+              )}
 
               <div className="mt-7 space-y-3.5">
                 {plan.features.map((feature) => (

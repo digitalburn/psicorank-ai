@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { sendWelcomeEmail } from "@/lib/email";
 
 type PendingCookie = { name: string; value: string; options: Record<string, unknown> };
 
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     },
   );
 
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  const { error: exchangeError, data: sessionData } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
     const url = new URL("/login", origin);
@@ -52,8 +53,13 @@ export async function GET(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("specialty, clinic_name")
+    .select("specialty, clinic_name, name")
     .maybeSingle();
+
+  // Envia boas-vindas apenas na primeira vez (sem specialty = recém-cadastrado)
+  if (!profile?.specialty && sessionData?.user?.email) {
+    sendWelcomeEmail(sessionData.user.email, profile?.name ?? sessionData.user.user_metadata?.name).catch(() => null);
+  }
 
   const needsOnboarding = !profile?.specialty || !profile?.clinic_name;
 

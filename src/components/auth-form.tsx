@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Eye,
@@ -20,6 +20,7 @@ type LoadingAction = "credentials" | "google" | null;
 
 export function AuthForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,6 +57,17 @@ export function AuthForm() {
       }
 
       if (mode === "login") {
+        const redirect = searchParams.get("redirect");
+        const plan = searchParams.get("plan");
+        if (redirect === "checkout" && (plan === "pro" || plan === "clinic")) {
+          const res = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ plan, billing: "monthly" }),
+          });
+          const data = (await res.json()) as { url?: string };
+          if (data.url) { window.location.href = data.url; return; }
+        }
         router.push("/dashboard");
         return;
       }

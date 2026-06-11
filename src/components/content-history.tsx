@@ -249,6 +249,12 @@ export function ContentHistory() {
     void loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    const handler = () => void loadData();
+    window.addEventListener("psicorank:content-generated", handler);
+    return () => window.removeEventListener("psicorank:content-generated", handler);
+  }, [loadData]);
+
   async function handleDeletePost(id: string) {
     setPosts((prev) => prev.filter((p) => p.id !== id));
     try {

@@ -4,89 +4,56 @@ import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   Clock3,
-  Eye,
+  FileText,
   Layers3,
   SearchCheck,
+  Sparkles,
   Star,
   TrendingUp,
-  UserPlus,
   Zap,
 } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { GeneratorWorkspace } from "@/components/generator-workspace";
 import { GoogleSeoGenerator } from "@/components/google-seo-generator";
 import { ContentHistory } from "@/components/content-history";
 import { GmbConnect } from "@/components/gmb-connect";
+import { UpgradeBanner } from "@/components/upgrade-banner";
+import { CheckoutSuccessToast } from "@/components/checkout-success-toast";
 import { cn } from "@/lib/cn";
 
-const metrics = [
-  {
-    label: "Visualizacoes",
-    value: "24.8k",
-    detail: "+18% nos ultimos 30 dias",
-    progress: 78,
-    icon: Eye,
-  },
-  {
-    label: "Leads",
-    value: "312",
-    detail: "Contatos vindos de busca e Instagram",
-    progress: 62,
-    icon: UserPlus,
-  },
-  {
-    label: "Avaliacoes",
-    value: "4.9",
-    detail: "Media publica monitorada",
-    progress: 92,
-    icon: Star,
-  },
-  {
-    label: "Crescimento",
-    value: "+34%",
-    detail: "Evolucao de descoberta local",
-    progress: 70,
-    icon: TrendingUp,
-  },
-  {
-    label: "Score SEO",
-    value: "86",
-    detail: "Pontuacao estimada do perfil local",
-    progress: 86,
-    icon: SearchCheck,
-  },
-];
+type DashboardMetrics = {
+  trendSeries: number[];
+  completenessScore: number;
+  seoScore: number;
+  authorityScore: number;
+  consolidatedScore: number;
+  activity: { title: string; tag: string; accent: "emerald" | "blue" | "violet"; time: string }[];
+  totalPosts: number;
+  totalSeo: number;
+  gmbConnected: boolean;
+  plan: string;
+};
 
-const trendSeries = [42, 48, 53, 49, 62, 68, 74, 69, 82, 88, 84, 96];
-
-const channelBars = [
+const CHANNEL_BARS = [
   { label: "Instagram", value: 74 },
   { label: "Google", value: 86 },
   { label: "Indicação", value: 54 },
   { label: "Direct", value: 68 },
 ];
 
-const activity = [
-  {
-    title: "Post sobre ansiedade finalizado",
-    time: "agora",
-    tag: "Instagram",
-    accent: "emerald",
-  },
-  {
-    title: "SEO local atualizado para Sao Paulo",
-    time: "12 min",
-    tag: "Google Meu Negocio",
-    accent: "blue",
-  },
-  {
-    title: "Resposta de avaliacao pronta",
-    time: "48 min",
-    tag: "Reputacao",
-    accent: "violet",
-  },
-];
+const EMPTY_METRICS: DashboardMetrics = {
+  trendSeries: Array(12).fill(0),
+  completenessScore: 0,
+  seoScore: 0,
+  authorityScore: 0,
+  consolidatedScore: 0,
+  activity: [],
+  totalPosts: 0,
+  totalSeo: 0,
+  gmbConnected: false,
+  plan: "starter",
+};
 
 const stagger = {
   hidden: { opacity: 0 },
@@ -102,9 +69,65 @@ const item = {
 };
 
 export default function DashboardPage() {
+  const [data, setData] = useState<DashboardMetrics | null>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard/metrics")
+      .then((r) => r.json())
+      .then((d: DashboardMetrics) => setData(d))
+      .catch(() => setData(EMPTY_METRICS));
+  }, []);
+
+  const m = data ?? EMPTY_METRICS;
+  const loading = data === null;
+
+  const metrics = [
+    {
+      label: "Posts gerados",
+      value: loading ? "—" : String(m.totalPosts),
+      detail: "Total de posts criados com IA",
+      progress: Math.min(m.totalPosts * 5, 100),
+      icon: Sparkles,
+    },
+    {
+      label: "SEO criados",
+      value: loading ? "—" : String(m.totalSeo),
+      detail: "Pacotes de SEO local gerados",
+      progress: Math.min(m.totalSeo * 10, 100),
+      icon: FileText,
+    },
+    {
+      label: "GMB conectado",
+      value: loading ? "—" : m.gmbConnected ? "Sim" : "Não",
+      detail: m.gmbConnected ? "Google Meu Negócio ativo" : "Conecte para ver avaliações",
+      progress: m.gmbConnected ? 100 : 0,
+      icon: Star,
+    },
+    {
+      label: "Autoridade",
+      value: loading ? "—" : `${m.authorityScore}%`,
+      detail: "GMB + volume de conteúdo",
+      progress: m.authorityScore,
+      icon: TrendingUp,
+    },
+    {
+      label: "Score SEO",
+      value: loading ? "—" : `${m.seoScore}%`,
+      detail: "Baseado nos pacotes gerados",
+      progress: m.seoScore,
+      icon: SearchCheck,
+    },
+  ];
+
   return (
     <DashboardShell>
+      <Suspense fallback={null}><CheckoutSuccessToast /></Suspense>
       <motion.div className="space-y-6" variants={stagger} initial="hidden" animate="show">
+        {!loading && m.plan === "starter" && (
+          <motion.div variants={item}>
+            <UpgradeBanner />
+          </motion.div>
+        )}
         <motion.section
           className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]"
           variants={item}
@@ -125,13 +148,13 @@ export default function DashboardPage() {
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <button className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100">
+                <a href="#instagram" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-900 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100">
                   Abrir gerador
                   <ArrowUpRight className="size-4" />
-                </button>
-                <button className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800">
-                  Ver relatorios
-                </button>
+                </a>
+                <a href="#historico" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800">
+                  Ver historico
+                </a>
               </div>
             </div>
           </div>
@@ -143,7 +166,7 @@ export default function DashboardPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                     Tendencia 30 dias
                   </p>
                   <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
@@ -155,23 +178,23 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="mt-6">
-                <MiniLineChart values={trendSeries} />
+                <MiniLineChart values={m.trendSeries} />
               </div>
             </motion.div>
 
             <motion.div
-              className="rounded-[2rem] border border-slate-200/80 bg-slate-950 p-5 text-white shadow-[0_20px_60px_rgba(15,23,42,0.14)] dark:border-slate-800/80 dark:bg-white dark:text-slate-950"
+              className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-slate-800/80 dark:bg-slate-950"
               variants={item}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-white/56 dark:text-slate-500">
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                     Saude do perfil
                   </p>
-                  <p className="mt-1 text-lg font-semibold">Score consolidado</p>
+                  <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">Score consolidado</p>
                 </div>
-                <div className="grid size-11 place-items-center rounded-2xl bg-white/10 dark:bg-slate-950/10">
-                  <Layers3 className="size-5" aria-hidden="true" />
+                <div className="grid size-11 place-items-center rounded-2xl bg-slate-100 dark:bg-white/10">
+                  <Layers3 className="size-5 text-slate-600 dark:text-white" aria-hidden="true" />
                 </div>
               </div>
               <div className="mt-6 flex items-end gap-4">
@@ -182,7 +205,7 @@ export default function DashboardPage() {
                       cy="60"
                       r="46"
                       fill="none"
-                      className="stroke-white/10 dark:stroke-slate-200"
+                      className="stroke-slate-200 dark:stroke-white/10"
                       strokeWidth="12"
                     />
                     <motion.circle
@@ -190,37 +213,37 @@ export default function DashboardPage() {
                       cy="60"
                       r="46"
                       fill="none"
-                      className="stroke-emerald-400 dark:stroke-emerald-500"
+                      className="stroke-emerald-500 dark:stroke-emerald-400"
                       strokeLinecap="round"
                       strokeWidth="12"
                       strokeDasharray={289}
-                      strokeDashoffset={289 - (289 * 86) / 100}
+                      strokeDashoffset={289 - (289 * m.consolidatedScore) / 100}
                       initial={{ strokeDashoffset: 289 }}
-                      animate={{ strokeDashoffset: 289 - (289 * 86) / 100 }}
+                      animate={{ strokeDashoffset: 289 - (289 * m.consolidatedScore) / 100 }}
                       transition={{ duration: 1.2, ease: "easeOut" }}
                     />
                   </svg>
                   <div className="absolute text-center">
-                    <p className="text-3xl font-semibold">86</p>
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/55 dark:text-slate-500">
-                      SEO
+                    <p className="text-3xl font-semibold text-slate-950 dark:text-white">{loading ? "—" : m.consolidatedScore}</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                      Score
                     </p>
                   </div>
                 </div>
                 <div className="flex-1 space-y-3">
                   {[
-                    ["Completeness", 82],
-                    ["Keywords locais", 91],
-                    ["Autoridade", 74],
+                    ["Completeness", m.completenessScore] as const,
+                    ["Keywords locais", m.seoScore] as const,
+                    ["Autoridade", m.authorityScore] as const,
                   ].map(([label, value]) => (
                     <div key={label as string}>
                       <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-white/68 dark:text-slate-600">{label as string}</span>
-                        <span className="font-semibold">{value as number}%</span>
+                        <span className="text-gray-700 dark:text-slate-300">{label as string}</span>
+                        <span className="font-semibold text-slate-950 dark:text-white">{value as number}%</span>
                       </div>
-                      <div className="h-2 rounded-full bg-white/10 dark:bg-slate-200">
+                      <div className="h-2 rounded-full bg-slate-200 dark:bg-white/25">
                         <div
-                          className="h-full rounded-full bg-emerald-400 dark:bg-slate-950"
+                          className="h-full rounded-full bg-emerald-500 dark:bg-emerald-400"
                           style={{ width: `${value as number}%` }}
                         />
                       </div>
@@ -262,7 +285,7 @@ export default function DashboardPage() {
                 <p className="mt-4 min-h-10 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {metric.detail}
                 </p>
-                <div className="mt-4 h-2 rounded-full bg-slate-100 dark:bg-slate-800">
+                <div className="mt-4 h-2 rounded-full bg-slate-300 dark:bg-slate-700">
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500"
                     initial={{ width: 0 }}
@@ -279,7 +302,7 @@ export default function DashboardPage() {
           <div className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                   Canais
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
@@ -292,19 +315,19 @@ export default function DashboardPage() {
             </div>
             <div className="mt-6 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="rounded-[1.5rem] bg-slate-950 p-4 text-white dark:bg-slate-100 dark:text-slate-950">
-                <p className="text-sm font-semibold text-white/60 dark:text-slate-500">
+                <p className="text-sm font-semibold text-slate-400 dark:text-slate-600">
                   Volume por canal
                 </p>
                 <div className="mt-5 space-y-4">
-                  {channelBars.map((bar) => (
+                  {CHANNEL_BARS.map((bar) => (
                     <div key={bar.label}>
                       <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-white/74 dark:text-slate-600">{bar.label}</span>
+                        <span className="text-slate-100 dark:text-slate-700">{bar.label}</span>
                         <span className="font-semibold">{bar.value}%</span>
                       </div>
-                      <div className="h-2 rounded-full bg-white/12 dark:bg-slate-200">
+                      <div className="h-2 rounded-full bg-white/25 dark:bg-slate-300">
                         <motion.div
-                          className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 dark:from-slate-950 dark:via-slate-900 dark:to-slate-700"
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500"
                           initial={{ width: 0 }}
                           animate={{ width: `${bar.value}%` }}
                           transition={{ duration: 0.8 }}
@@ -332,7 +355,7 @@ export default function DashboardPage() {
                         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                           {label}
                         </span>
-                        <span className="text-sm font-semibold text-slate-950 dark:text-white">
+                        <span className="text-sm font-bold text-slate-950 dark:text-white">
                           {value}
                         </span>
                       </div>
@@ -354,7 +377,7 @@ export default function DashboardPage() {
           <div className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
                   Feed operacional
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
@@ -363,9 +386,13 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-6 space-y-3">
-              {activity.map((entry) => (
+              {m.activity.length === 0 ? (
+                <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-900">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Nenhuma atividade ainda — gere seu primeiro post!</p>
+                </div>
+              ) : m.activity.map((entry, i) => (
                 <div
-                  key={entry.title}
+                  key={i}
                   className="flex items-start gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div
@@ -378,11 +405,11 @@ export default function DashboardPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-slate-950 dark:text-white">{entry.title}</p>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                       {entry.tag}
                     </p>
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">
                     {entry.time}
                   </span>
                 </div>
@@ -391,7 +418,7 @@ export default function DashboardPage() {
           </div>
         </motion.section>
 
-        <motion.section variants={item}>
+        <motion.section id="reviews" variants={item}>
           <Suspense fallback={<div className="h-48 animate-pulse rounded-[2rem] bg-white/50 dark:bg-slate-900/50" />}>
             <GmbConnect />
           </Suspense>

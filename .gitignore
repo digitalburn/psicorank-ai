@@ -6,3 +6,12 @@ out
 .vercel
 *.log
 coverage
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Screenshots de desenvolvimento
+ss-*.png
+
+# Scripts de verificação temporários
+verify-*.mjs
