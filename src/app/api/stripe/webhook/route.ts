@@ -21,42 +21,48 @@ export async function POST(request: Request) {
 
   const supabase = createSupabaseAdminClient();
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    if (session.mode !== "subscription" || !session.subscription) return NextResponse.json({ ok: true });
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode !== "subscription" || !session.subscription) {
+        return NextResponse.json({ ok: true });
+      }
 
-    const sub = await stripe.subscriptions.retrieve(session.subscription as string);
-    await upsertSubscription(supabase, sub);
+      const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+      await upsertSubscription(supabase, sub);
 
-    // Envia recibo de pagamento
-    const userId = sub.metadata?.supabase_user_id;
-    if (userId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("email, name, plan")
-        .eq("id", userId)
-        .single();
-      if (profile?.email) {
-        const planLabel = profile.plan === "clinic" ? "Clínica" : "Pro";
-        const amountTotal = session.amount_total ?? 0;
-        const amountStr = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amountTotal / 100);
-        sendPaymentReceiptEmail(profile.email, profile.name, planLabel, amountStr).catch(() => null);
+      const userId = sub.metadata?.supabase_user_id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, name, plan")
+          .eq("id", userId)
+          .single();
+        if (profile?.email) {
+          const planLabel = profile.plan === "clinic" ? "Clínica" : "Pro";
+          const amountTotal = session.amount_total ?? 0;
+          const amountStr = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amountTotal / 100);
+          sendPaymentReceiptEmail(profile.email, profile.name, planLabel, amountStr).catch(() => null);
+        }
       }
     }
-  }
 
-  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.created") {
-    const sub = event.data.object as Stripe.Subscription;
-    await upsertSubscription(supabase, sub);
-  }
+    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.created") {
+      const sub = event.data.object as Stripe.Subscription;
+      await upsertSubscription(supabase, sub);
+    }
 
-  if (event.type === "customer.subscription.deleted") {
-    const sub = event.data.object as Stripe.Subscription;
-    const userId = sub.metadata?.supabase_user_id;
-    if (!userId) return NextResponse.json({ ok: true });
+    if (event.type === "customer.subscription.deleted") {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.supabase_user_id;
+      if (!userId) return NextResponse.json({ ok: true });
 
-    await supabase.from("subscriptions").delete().eq("stripe_subscription_id", sub.id);
-    await supabase.from("profiles").update({ plan: "starter" }).eq("id", userId);
+      await supabase.from("subscriptions").delete().eq("stripe_subscription_id", sub.id);
+      await supabase.from("profiles").update({ plan: "starter" }).eq("id", userId);
+    }
+  } catch (err) {
+    console.error(`[stripe-webhook] falha ao processar ${event.type}:`, err);
+    return NextResponse.json({ error: "Erro interno — Stripe deve tentar novamente." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
