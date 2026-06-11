@@ -219,6 +219,12 @@ export async function POST(request: Request) {
     );
   }
 
+  const authClient = await createServerSupabaseClient();
+  const { data: { user: authUser } } = await authClient.auth.getUser();
+  if (!authUser) {
+    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  }
+
   try {
     const payload = (await request.json()) as GeneratorRequest;
 
