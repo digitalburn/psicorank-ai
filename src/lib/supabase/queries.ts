@@ -7,6 +7,13 @@ import type {
 } from "@/lib/generation";
 import type { GeneratedPostRow, GeneratedSeoRow, Profile, Subscription } from "@/lib/database.types";
 
+export class QuotaExceededError extends Error {
+  constructor() {
+    super("quota_exceeded");
+    this.name = "QuotaExceededError";
+  }
+}
+
 export async function getProfile(supabase: SupabaseClient): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").single();
   if (error && error.code !== "PGRST116") throw error;
@@ -19,25 +26,24 @@ export async function savePost(
   payload: PostGeneratorPayload,
   content: GeneratedPost,
 ): Promise<{ id: string }> {
-  const { data, error } = await supabase
-    .from("generated_posts")
-    .insert({
-      user_id: userId,
-      topic: payload.topic,
-      clinic_name: payload.clinicName,
-      specialty: payload.specialty,
-      audience: payload.audience,
-      tone: payload.tone,
-      legenda: content.legenda,
-      cta: content.cta,
-      hashtags: content.hashtags,
-      ideia_visual: content.ideiaVisual,
-    })
-    .select("id")
-    .single();
+  const { data, error } = await supabase.rpc("check_and_save_post", {
+    p_user_id:      userId,
+    p_topic:        payload.topic,
+    p_clinic_name:  payload.clinicName,
+    p_specialty:    payload.specialty,
+    p_audience:     payload.audience,
+    p_tone:         payload.tone,
+    p_legenda:      content.legenda,
+    p_cta:          content.cta,
+    p_hashtags:     content.hashtags,
+    p_ideia_visual: content.ideiaVisual,
+  });
 
-  if (error) throw error;
-  return data as { id: string };
+  if (error) {
+    if (error.message.includes("quota_exceeded")) throw new QuotaExceededError();
+    throw error;
+  }
+  return { id: data as string };
 }
 
 export async function saveSeo(
@@ -46,24 +52,23 @@ export async function saveSeo(
   payload: GoogleSeoGeneratorPayload,
   content: GeneratedGoogleSeo,
 ): Promise<{ id: string }> {
-  const { data, error } = await supabase
-    .from("generated_seo")
-    .insert({
-      user_id: userId,
-      city: payload.city,
-      specialty: payload.specialty,
-      therapeutic_focus: payload.therapeuticFocus,
-      descricao_otimizada: content.descricaoOtimizada,
-      servicos: content.servicos,
-      perguntas_respostas: content.perguntasRespostas,
-      titulos_locais_seo: content.titulosLocaisSeo,
-      posts_estrategicos: content.postsEstrategicos,
-    })
-    .select("id")
-    .single();
+  const { data, error } = await supabase.rpc("check_and_save_seo", {
+    p_user_id:               userId,
+    p_city:                  payload.city,
+    p_specialty:             payload.specialty,
+    p_therapeutic_focus:     payload.therapeuticFocus,
+    p_descricao_otimizada:   content.descricaoOtimizada,
+    p_servicos:              content.servicos,
+    p_perguntas_respostas:   content.perguntasRespostas,
+    p_titulos_locais_seo:    content.titulosLocaisSeo,
+    p_posts_estrategicos:    content.postsEstrategicos,
+  });
 
-  if (error) throw error;
-  return data as { id: string };
+  if (error) {
+    if (error.message.includes("quota_exceeded")) throw new QuotaExceededError();
+    throw error;
+  }
+  return { id: data as string };
 }
 
 export async function getRecentPosts(

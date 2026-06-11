@@ -13,7 +13,7 @@ import {
   type PostGeneratorPayload,
 } from "@/lib/generation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { savePost, saveSeo, getPostCountThisMonth, getSeoCountThisMonth } from "@/lib/supabase/queries";
+import { savePost, saveSeo, getPostCountThisMonth, getSeoCountThisMonth, QuotaExceededError } from "@/lib/supabase/queries";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL ?? "claude-haiku-4-5-20251001";
@@ -103,13 +103,12 @@ function parseGeneratedGoogleSeo(text: string): GeneratedGoogleSeo {
 async function persistPost(payload: PostGeneratorPayload, content: GeneratedPost) {
   try {
     const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     const saved = await savePost(supabase, user.id, payload, content);
     return saved.id;
-  } catch {
+  } catch (err) {
+    if (err instanceof QuotaExceededError) throw err;
     return null;
   }
 }
@@ -117,13 +116,12 @@ async function persistPost(payload: PostGeneratorPayload, content: GeneratedPost
 async function persistSeo(payload: GoogleSeoGeneratorPayload, content: GeneratedGoogleSeo) {
   try {
     const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     const saved = await saveSeo(supabase, user.id, payload, content);
     return saved.id;
-  } catch {
+  } catch (err) {
+    if (err instanceof QuotaExceededError) throw err;
     return null;
   }
 }
@@ -164,13 +162,19 @@ async function generatePost(payload: PostGeneratorPayload) {
   });
 
   const content = parseGeneratedPost(text);
-  const savedId = await persistPost(payload, content);
 
-  return NextResponse.json({
-    title: `Post sobre ${payload.topic}`,
-    content,
-    savedId,
-  });
+  try {
+    const savedId = await persistPost(payload, content);
+    return NextResponse.json({ title: `Post sobre ${payload.topic}`, content, savedId });
+  } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json(
+        { error: "Limite de 5 posts/mês atingido no plano Starter. Faça upgrade para o Pro." },
+        { status: 403 },
+      );
+    }
+    throw err;
+  }
 }
 
 async function generateGoogleSeo(payload: GoogleSeoGeneratorPayload) {
@@ -202,13 +206,19 @@ async function generateGoogleSeo(payload: GoogleSeoGeneratorPayload) {
   });
 
   const content = parseGeneratedGoogleSeo(text);
-  const savedId = await persistSeo(payload, content);
 
-  return NextResponse.json({
-    title: `SEO Google Meu Negócio em ${payload.city}`,
-    content,
-    savedId,
-  });
+  try {
+    const savedId = await persistSeo(payload, content);
+    return NextResponse.json({ title: `SEO Google Meu Negócio em ${payload.city}`, content, savedId });
+  } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json(
+        { error: "Limite de 1 SEO/mês atingido no plano Starter. Faça upgrade para o Pro." },
+        { status: 403 },
+      );
+    }
+    throw err;
+  }
 }
 
 export async function POST(request: Request) {
