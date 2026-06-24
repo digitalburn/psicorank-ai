@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Settings } from "lucide-react";
 import { ComingSoon } from "@/components/coming-soon";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Configurações" };
 
 export default function ConfiguracoesPage() {

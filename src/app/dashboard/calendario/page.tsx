@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { CalendarDays } from "lucide-react";
 import { ComingSoon } from "@/components/coming-soon";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Calendário Editorial" };
 
 export default function CalendarioPage() {

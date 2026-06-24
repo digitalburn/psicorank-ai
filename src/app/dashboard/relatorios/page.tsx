@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { BarChart3 } from "lucide-react";
 import { ComingSoon } from "@/components/coming-soon";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Relatórios" };
 
 export default function RelatoriosPage() {
