@@ -26,8 +26,9 @@ type AsaasEvent =
   | { event: string; subscription: AsaasSubscription };
 
 export async function POST(request: Request) {
-  const token = request.headers.get("asaas-access-token");
-  if (process.env.ASAAS_WEBHOOK_TOKEN && token !== process.env.ASAAS_WEBHOOK_TOKEN) {
+  const token = request.headers.get("asaas-access-token")?.trim();
+  const envToken = process.env.ASAAS_WEBHOOK_TOKEN?.trim();
+  if (envToken && token !== envToken) {
     return NextResponse.json({ error: "Token inválido." }, { status: 401 });
   }
 
