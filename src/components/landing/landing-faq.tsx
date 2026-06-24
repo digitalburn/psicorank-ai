@@ -151,7 +151,7 @@ export function LandingFaq() {
             Nossa equipe está disponível de segunda a sexta, das 9h às 18h.
           </p>
           <a
-            href="https://wa.me/5511999999999"
+            href="https://wa.me/5511982113231"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-6 py-3 text-sm font-bold text-white shadow-[0_12px_28px_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(15,23,42,0.28)] dark:bg-white dark:text-slate-950"

@@ -66,8 +66,8 @@ const plans = [
   {
     name: "Clínica",
     description: "Para clínicas e grupos com múltiplos profissionais.",
-    monthlyPrice: 297,
-    annualPrice: 237,
+    monthlyPrice: 347,
+    annualPrice: 277,
     cta: "Falar com equipe",
     ctaVariant: "secondary" as const,
     popular: false,
