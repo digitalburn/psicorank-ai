@@ -31,9 +31,9 @@ const navItems = [
   { label: "Posts IA", icon: Sparkles, href: "/dashboard#instagram" },
   { label: "SEO local", icon: FileText, href: "/dashboard#google" },
   { label: "Avaliacoes", icon: Star, href: "/dashboard#reviews" },
-  { label: "Calendario", icon: CalendarDays, href: "/dashboard#calendar", comingSoon: true },
-  { label: "Relatorios", icon: BarChart3, href: "/dashboard#reports", comingSoon: true },
-  { label: "Configuracoes", icon: Settings, href: "/dashboard#settings", comingSoon: true },
+  { label: "Calendario", icon: CalendarDays, href: "/dashboard/calendario", comingSoon: true },
+  { label: "Relatorios", icon: BarChart3, href: "/dashboard/relatorios", comingSoon: true },
+  { label: "Configuracoes", icon: Settings, href: "/dashboard/configuracoes", comingSoon: true },
 ];
 
 const shellVariants = {
@@ -265,16 +265,17 @@ function SidebarContent({
 
           if (item.comingSoon) {
             return (
-              <div
+              <Link
                 key={item.label}
-                className="flex cursor-not-allowed items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 dark:text-slate-400"
+                href={item.href}
+                className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-300"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 <span>{item.label}</span>
-                <span className="ml-auto rounded-full border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                <span className="ml-auto rounded-full border border-mint/30 bg-mint/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-mint">
                   em breve
                 </span>
-              </div>
+              </Link>
             );
           }
 
