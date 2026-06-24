@@ -60,7 +60,7 @@ export function AuthForm() {
         const redirect = searchParams.get("redirect");
         const plan = searchParams.get("plan");
         if (redirect === "checkout" && (plan === "pro" || plan === "clinic")) {
-          const res = await fetch("/api/stripe/checkout", {
+          const res = await fetch("/api/asaas/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ plan, billing: "monthly" }),

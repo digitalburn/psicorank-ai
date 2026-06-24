@@ -264,7 +264,7 @@ export function GeneratorWorkspace() {
                   </div>
                   <button
                     onClick={async () => {
-                      const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: "pro", billing: "monthly" }) });
+                      const res = await fetch("/api/asaas/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: "pro", billing: "monthly" }) });
                       const d = (await res.json()) as { url?: string };
                       if (d.url) window.location.href = d.url;
                     }}

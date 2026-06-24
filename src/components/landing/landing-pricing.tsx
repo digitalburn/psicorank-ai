@@ -7,7 +7,7 @@ import { Check, Loader2, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 async function redirectToCheckout(plan: "pro" | "clinic", billing: "monthly" | "annual") {
-  const res = await fetch("/api/stripe/checkout", {
+  const res = await fetch("/api/asaas/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ plan, billing }),

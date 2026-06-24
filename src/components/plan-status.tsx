@@ -7,13 +7,13 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 type Plan = "starter" | "pro" | "clinic";
 
 async function openPortal() {
-  const res = await fetch("/api/stripe/portal", { method: "POST" });
+  const res = await fetch("/api/asaas/portal", { method: "POST" });
   const data = (await res.json()) as { url?: string };
-  if (data.url) window.location.href = data.url;
+  if (data.url) window.open(data.url, "_blank");
 }
 
 async function openCheckout() {
-  const res = await fetch("/api/stripe/checkout", {
+  const res = await fetch("/api/asaas/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ plan: "pro", billing: "monthly" }),
