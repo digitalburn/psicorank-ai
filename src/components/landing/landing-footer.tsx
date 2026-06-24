@@ -14,9 +14,8 @@ const footerLinks = {
     { label: "Contato", href: "#" },
   ],
   Legal: [
-    { label: "Termos de uso", href: "#" },
-    { label: "Privacidade", href: "#" },
-    { label: "Cookies", href: "#" },
+    { label: "Termos de uso", href: "/termos" },
+    { label: "Privacidade", href: "/privacidade" },
   ],
 };
 
@@ -111,12 +110,12 @@ export function LandingFooter() {
               <ul className="mt-4 space-y-3">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a
+                    <Link
                       href={link.href}
                       className="text-sm font-medium text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
