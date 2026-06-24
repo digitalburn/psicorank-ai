@@ -8,6 +8,7 @@ import {
   Baby,
   BrainCircuit,
   Clipboard,
+  Download,
   Hash,
   Heart,
   Image,
@@ -16,6 +17,7 @@ import {
   Send,
   Sparkles,
   UsersRound,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { GeneratedPost, PostGeneratorPayload, PostTopic } from "@/lib/generation";
@@ -73,6 +75,9 @@ export function GeneratorWorkspace() {
   const [isPlanLimit, setIsPlanLimit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const selectedTopic = topicDetails[topic];
   const resultText = useMemo(() => {
@@ -125,11 +130,38 @@ export function GeneratorWorkspace() {
         title: data.title || `Post sobre ${selectedTopic.label}`,
         content: data.content,
       });
+      setImageUrl(null);
+      setImageError(null);
       window.dispatchEvent(new CustomEvent("psicorank:content-generated"));
     } catch {
       setError("Falha de conexao ao chamar o gerador.");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleGenerateImage() {
+    if (!result?.content.ideiaVisual) return;
+    setIsGeneratingImage(true);
+    setImageUrl(null);
+    setImageError(null);
+    try {
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ideiaVisual: result.content.ideiaVisual,
+          topic,
+          specialty,
+        }),
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Erro ao gerar imagem.");
+      setImageUrl(data.url);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Erro ao gerar imagem.");
+    } finally {
+      setIsGeneratingImage(false);
     }
   }
 
@@ -298,9 +330,55 @@ export function GeneratorWorkspace() {
                     ))}
                   </div>
                 </ResultBlock>
-                <ResultBlock icon={Image} label="Ideia visual">
-                  {result.content.ideiaVisual}
-                </ResultBlock>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 font-bold text-slate-950 dark:text-white">
+                      <Image className="size-4 text-mint" aria-hidden="true" />
+                      Ideia visual
+                    </div>
+                    <button
+                      onClick={handleGenerateImage}
+                      disabled={isGeneratingImage}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-mint px-3 py-1.5 text-xs font-bold text-white shadow-[0_4px_12px_rgba(24,184,143,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingImage
+                        ? <><Loader2 className="size-3 animate-spin" />Gerando...</>
+                        : <><Wand2 className="size-3" />Gerar imagem</>}
+                    </button>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+                    {result.content.ideiaVisual}
+                  </p>
+                  {isGeneratingImage && (
+                    <div className="mt-4 flex h-48 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex flex-col items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        <Loader2 className="size-6 animate-spin text-mint" />
+                        Gerando imagem com DALL-E 3...
+                      </div>
+                    </div>
+                  )}
+                  {imageError && (
+                    <p className="mt-3 text-sm text-rose-500 dark:text-rose-400">{imageError}</p>
+                  )}
+                  {imageUrl && !isGeneratingImage && (
+                    <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imageUrl} alt="Imagem gerada por IA" className="w-full" />
+                      <div className="flex justify-end border-t border-slate-200 bg-slate-50 p-2 dark:border-slate-800 dark:bg-slate-900">
+                        <a
+                          href={imageUrl}
+                          download="post-psicorank.png"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                        >
+                          <Download className="size-3" />
+                          Baixar imagem
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {!isLoading && !error && !result?.content && (
