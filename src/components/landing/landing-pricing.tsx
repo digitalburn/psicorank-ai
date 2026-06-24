@@ -1,25 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Check, Loader2, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-async function redirectToCheckout(plan: "pro" | "clinic", billing: "monthly" | "annual") {
-  const res = await fetch("/api/asaas/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan, billing }),
-  });
-  if (res.status === 401) {
-    window.location.href = "/login?redirect=checkout&plan=" + plan;
-    return;
-  }
-  const data = (await res.json()) as { url?: string; error?: string };
-  if (data.url) window.location.href = data.url;
-  else alert(data.error ?? "Erro ao iniciar checkout.");
-}
+import { CpfCheckoutModal } from "@/components/cpf-checkout-modal";
 
 const plans = [
   {
@@ -96,15 +82,13 @@ const cardVariants = {
 
 export function LandingPricing() {
   const [annual, setAnnual] = useState(false);
-  const [loading, setLoading] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ plan: "pro" | "clinic"; billing: "monthly" | "annual" } | null>(null);
 
-  async function handlePro() {
-    setLoading("pro");
-    await redirectToCheckout("pro", annual ? "annual" : "monthly");
-    setLoading(null);
+  function handlePro() {
+    setModal({ plan: "pro", billing: annual ? "annual" : "monthly" });
   }
 
-  async function handleClinic() {
+  function handleClinic() {
     window.open("https://wa.me/5511982113231?text=Quero+conhecer+o+plano+Cl%C3%ADnica+do+PsicoRank", "_blank");
   }
 
@@ -224,13 +208,11 @@ export function LandingPricing() {
               {plan.name === "Pro" ? (
                 <button
                   onClick={handlePro}
-                  disabled={loading === "pro"}
                   className={cn(
-                    "mt-7 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed",
+                    "mt-7 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-bold transition hover:-translate-y-0.5",
                     "bg-mint text-white shadow-[0_12px_32px_rgba(24,184,143,0.35)] hover:shadow-[0_18px_40px_rgba(24,184,143,0.45)]",
                   )}
                 >
-                  {loading === "pro" && <Loader2 className="size-4 animate-spin" aria-hidden />}
                   {plan.cta}
                 </button>
               ) : plan.name === "Clínica" ? (
@@ -299,6 +281,16 @@ export function LandingPricing() {
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {modal && (
+          <CpfCheckoutModal
+            plan={modal.plan}
+            billing={modal.billing}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }

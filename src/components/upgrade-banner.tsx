@@ -1,23 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Loader2, Sparkles, X } from "lucide-react";
+import { CpfCheckoutModal } from "@/components/cpf-checkout-modal";
 
 export function UpgradeBanner() {
-  const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-
-  async function handleUpgrade() {
-    setLoading(true);
-    const res = await fetch("/api/asaas/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: "pro", billing: "monthly" }),
-    });
-    const data = (await res.json()) as { url?: string; error?: string };
-    if (data.url) window.location.href = data.url;
-    else setLoading(false);
-  }
 
   if (dismissed) return null;
 
@@ -35,11 +25,9 @@ export function UpgradeBanner() {
         </p>
       </div>
       <button
-        onClick={handleUpgrade}
-        disabled={loading}
+        onClick={() => setModal(true)}
         className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-mint px-4 py-2 text-sm font-bold text-white shadow-[0_8px_20px_rgba(24,184,143,0.3)] transition hover:-translate-y-0.5 disabled:opacity-70"
       >
-        {loading && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
         Assinar Pro — R$147/mês
       </button>
       <button
@@ -49,6 +37,12 @@ export function UpgradeBanner() {
       >
         <X className="size-4" aria-hidden />
       </button>
+
+      <AnimatePresence>
+        {modal && (
+          <CpfCheckoutModal plan="pro" billing="monthly" onClose={() => setModal(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -19,10 +19,19 @@ export async function POST(request: Request) {
 
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
-  const { plan, billing } = (await request.json()) as { plan: PlanKey; billing: BillingInterval };
+  const { plan, billing, cpfCnpj } = (await request.json()) as {
+    plan: PlanKey;
+    billing: BillingInterval;
+    cpfCnpj: string;
+  };
 
   if (!["pro", "clinic"].includes(plan) || !["monthly", "annual"].includes(billing)) {
     return NextResponse.json({ error: "Plano ou período inválido." }, { status: 400 });
+  }
+
+  const cpf = (cpfCnpj ?? "").replace(/\D/g, "");
+  if (cpf.length !== 11 && cpf.length !== 14) {
+    return NextResponse.json({ error: "CPF ou CNPJ inválido." }, { status: 400 });
   }
 
   try {
@@ -38,6 +47,7 @@ export async function POST(request: Request) {
       customerId = await findOrCreateCustomer(
         profile?.email ?? user.email ?? "",
         profile?.name ?? "Psicólogo(a)",
+        cpf,
       );
       await supabase
         .from("profiles")

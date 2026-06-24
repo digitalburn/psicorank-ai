@@ -43,7 +43,11 @@ export function planFromPriceKey(priceKey: string): Plan {
   return "starter";
 }
 
-export async function findOrCreateCustomer(email: string, name: string): Promise<string> {
+export async function findOrCreateCustomer(
+  email: string,
+  name: string,
+  cpfCnpj: string,
+): Promise<string> {
   type CustomerList = { data: Array<{ id: string }> };
   const list = await req<CustomerList>(
     `/customers?email=${encodeURIComponent(email)}&limit=1`,
@@ -52,7 +56,7 @@ export async function findOrCreateCustomer(email: string, name: string): Promise
 
   const customer = await req<{ id: string }>("/customers", {
     method: "POST",
-    body: JSON.stringify({ name, email }),
+    body: JSON.stringify({ name, email, cpfCnpj }),
   });
   return customer.id;
 }
