@@ -132,7 +132,7 @@ export default function DashboardPage() {
           className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]"
           variants={item}
         >
-          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/85 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-8">
+          <div className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-8">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_32%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.1),_transparent_28%)]" />
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/15 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
@@ -161,12 +161,12 @@ export default function DashboardPage() {
 
           <div className="grid gap-5">
             <motion.div
-              className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72"
+              className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72"
               variants={item}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                     Tendencia 30 dias
                   </p>
                   <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
@@ -188,7 +188,7 @@ export default function DashboardPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                     Saude do perfil
                   </p>
                   <p className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">Score consolidado</p>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
               <motion.div
                 key={metric.label}
                 className={cn(
-                  "group rounded-[1.75rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.1)] dark:border-slate-800/80 dark:bg-slate-950/72",
+                  "group rounded-[1.75rem] border border-slate-200/80 bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.1)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(15,23,42,0.15)] dark:border-slate-800/80 dark:bg-slate-950/72",
                 )}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -271,7 +271,7 @@ export default function DashboardPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                       {metric.label}
                     </p>
                     <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
@@ -299,10 +299,10 @@ export default function DashboardPage() {
         </motion.section>
 
         <motion.section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]" variants={item}>
-          <div className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
+          <div className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                   Canais
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">
@@ -339,7 +339,7 @@ export default function DashboardPage() {
               </div>
               <div className="grid gap-4">
                 <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                     Indicadores chave
                   </p>
                   <div className="mt-4 grid gap-3">
@@ -374,10 +374,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
+          <div className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/72 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">
                   Feed operacional
                 </p>
                 <h3 className="mt-1 text-xl font-semibold text-slate-950 dark:text-white">

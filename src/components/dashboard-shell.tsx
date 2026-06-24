@@ -53,7 +53,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [hash, setHash] = useState("");
 
   const activePath = useMemo(() => pathname ?? "/dashboard", [pathname]);
@@ -61,7 +61,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("theme");
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme === "dark" || (!savedTheme && systemDark) ? "dark" : "light";
+    const initialTheme = savedTheme === "light" ? "light" : "dark";
 
     setTheme(initialTheme);
     document.documentElement.classList.toggle("dark", initialTheme === "dark");
@@ -86,8 +86,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.06),_transparent_32%),linear-gradient(180deg,#f8fafc_0%,#eef2ff_100%)] text-slate-950 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_30%),linear-gradient(180deg,#060816_0%,#0b1020_100%)] dark:text-slate-50">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-80 overflow-y-auto border-r border-slate-200/80 bg-white/85 px-5 py-6 backdrop-blur-2xl dark:border-slate-800/80 dark:bg-slate-950/78 lg:block">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.08),_transparent_32%),linear-gradient(180deg,#e2e8f0_0%,#dde4f0_100%)] text-slate-950 transition-colors duration-300 dark:bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_30%),linear-gradient(180deg,#060816_0%,#0b1020_100%)] dark:text-slate-50">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-80 overflow-y-auto border-r border-slate-300/80 bg-slate-100/95 px-5 py-6 backdrop-blur-2xl dark:border-slate-800/80 dark:bg-slate-950/78 lg:block">
         <SidebarContent activePath={activePath} hash={hash} user={user} onSignOut={signOut} />
       </aside>
 
@@ -125,7 +125,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </AnimatePresence>
 
       <section className="lg:pl-80">
-        <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/72 px-5 py-4 backdrop-blur-2xl transition-colors duration-300 dark:border-slate-800/70 dark:bg-slate-950/72 sm:px-8">
+        <header className="sticky top-0 z-20 border-b border-slate-300/70 bg-slate-100/90 px-5 py-4 backdrop-blur-2xl transition-colors duration-300 dark:border-slate-800/70 dark:bg-slate-950/72 sm:px-8">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             <div className="flex items-center gap-3 lg:hidden">
               <Button variant="ghost" className="size-11 rounded-full p-0" onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
